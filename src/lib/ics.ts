@@ -1,4 +1,4 @@
-import { computeTimes, PRAYER_LABEL, PRAYERS } from './prayer'
+import { schedule, PRAYER_LABEL, PRAYERS } from './prayer'
 import type { Settings } from './settings'
 
 // Exports upcoming prayer times as an iCalendar file. The phone's own calendar then raises the
@@ -10,14 +10,14 @@ export function prayerIcs(s: Settings, days = 30, alarmMinutes = 0) {
   const start = new Date(); start.setHours(12, 0, 0, 0)
   for (let i = 0; i < days; i++) {
     const d = new Date(start); d.setDate(start.getDate() + i)
-    const r = computeTimes(s, d)
+    const r = schedule(s, d)
     if (!r) continue
     for (const p of PRAYERS) {
       if (p === 'sunrise') continue
       const at = r.times[p]
       const name = p === 'dhuhr' && d.getDay() === 5 ? 'Jumuʿah' : PRAYER_LABEL[p]
       lines.push('BEGIN:VEVENT', `UID:${p}-${stamp(at)}@siratpath`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(at)}`,
-        `DTEND:${stamp(new Date(at.getTime() + 15 * 60_000))}`, `SUMMARY:🕌 ${name}`, `DESCRIPTION:${name} — ${s.location?.label ?? ''} (Sirat Path)`,
+        `DTEND:${stamp(new Date(at.getTime() + 15 * 60_000))}`, `SUMMARY:🕌 ${name}`, `DESCRIPTION:${name}${r.fromMosque[p] ? ` jamaat — ${r.mosque!.name}` : ` — ${s.location?.label ?? ''}`} (Sirat Path)`,
         'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${name}`, `TRIGGER:-PT${alarmMinutes}M`, 'END:VALARM', 'END:VEVENT')
     }
   }

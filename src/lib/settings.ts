@@ -43,6 +43,8 @@ export type Settings = {
   /** Mosques the user follows; jamaat times are entered by the user (no public source exists). */
   mosques: Mosque[]
   mosqueId: string | null
+  /** Use the selected mosque's jamaat times throughout the app (Home, Salah, reminders, calendar). */
+  mosqueTimes: boolean
   prayerV2: boolean
   /** Hifz progress per surah number: learning or memorised, plus the last revision day. */
   hifz: Record<string, { st: 'learning' | 'done'; rev?: string }>
@@ -54,7 +56,7 @@ const DEFAULTS: Settings = {
   adjustments: {}, lastRead: null, notify: false,
   readMode: 'verse', playbackRate: 1, repeat: 1, sidebarSurahs: true,
   accent: 'emerald', lang: 'en', name: '', dailyAyahGoal: 20, sound: false, onboarded: false, secondTranslation: 0, urduId: 234, hadithLang: 'en', tajweed: false, adhan: false,
-  continueSurahs: true, qada: {}, hifz: {}, mosques: [], mosqueId: null, prayerV2: true,
+  continueSurahs: true, qada: {}, hifz: {}, mosques: [], mosqueId: null, mosqueTimes: true, prayerV2: true,
 }
 
 const KEY = 'sirat-settings'

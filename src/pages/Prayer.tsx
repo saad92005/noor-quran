@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CalendarPlus, Square, Volume2, Bell, BellOff, ChevronLeft, ChevronRight, MapPin, Printer } from 'lucide-react'
-import { computeTimes, fmtTime, hijri, METHODS, nextPrayer, PRAYERS, PRAYER_LABEL, regionCalc } from '../lib/prayer'
-import { jamaatAt } from '../lib/mosques'
+import { fmtTime, hijri, METHODS, nextPrayer, PRAYERS, PRAYER_LABEL, regionCalc, schedule } from '../lib/prayer'
 import MosquePanel from '../components/MosquePanel'
 import { setSettings, useSettings } from '../lib/settings'
 import { ADHAN_CREDIT, notificationSupport, playAdhan, stopAdhan } from '../lib/notify'
@@ -20,9 +19,8 @@ export default function Prayer() {
   useEffect(() => { const id = setInterval(() => setNow(new Date()), 30_000); return () => clearInterval(id) }, [])
 
   const date = new Date(now); date.setDate(now.getDate() + offset)
-  const r = computeTimes(s, date)
+  const r = schedule(s, date)
   const next = offset === 0 ? nextPrayer(s, now) : null
-  const mosque = s.mosques.find((m) => m.id === s.mosqueId)
   const rec = regionCalc(s.location?.label)
 
   async function toggleNotify() {
@@ -67,13 +65,13 @@ export default function Prayer() {
                     <span className={`font-medium ${p === 'sunrise' && !isNext ? 'text-muted' : ''}`}>{p === 'dhuhr' && date.getDay() === 5 ? t('jumuah') : t(p as StrKey)}</span>
                     <span className="text-end">
                       <span className="block text-lg font-semibold tabular-nums">{fmtTime(r.times[p])}</span>
-                      {(() => { const j = p !== 'sunrise' && jamaatAt(mosque, p, r.times[p]); return j ? <span className={`block text-xs tabular-nums ${isNext ? 'text-brand-ink/80' : 'text-muted'}`}>Jamaat {fmtTime(j)}</span> : null })()}
+                      {r.fromMosque[p] && <span className={`block text-xs tabular-nums ${isNext ? 'text-brand-ink/80' : 'text-muted'}`}>Adhan {fmtTime(r.adhan[p])}</span>}
                     </span>
                   </li>
                 )
               })}
             </ul>
-            {mosque && <p className="border-t border-line px-5 py-2 text-xs text-muted">Jamaat times: {mosque.name} (as entered by you)</p>}
+            {r?.mosque && <p className="border-t border-line px-5 py-2 text-xs text-muted">Showing jamaat times of <b>{r.mosque.name}</b>{PRAYERS.some((p) => p !== 'sunrise' && !r.fromMosque[p]) ? '; prayers without a jamaat time show the calculated adhan time' : ''}.</p>}
             {r && (
               <p className="border-t border-line px-5 py-3 text-xs text-muted">
                 Middle of the night {fmtTime(r.sunnah.middleOfTheNight)} · Last third {fmtTime(r.sunnah.lastThirdOfTheNight)}
@@ -184,7 +182,7 @@ function MonthTable() {
             <tbody>
               {Array.from({ length: days }, (_, i) => {
                 const d = new Date(now.getFullYear(), now.getMonth(), i + 1, 12)
-                const r = computeTimes(s, d)
+                const r = schedule(s, d)
                 const isToday = d.toDateString() === now.toDateString()
                 return (
                   <tr key={i} className={`border-t border-line ${isToday ? 'bg-brand/10 font-semibold' : ''} ${d.getDay() === 5 ? 'text-brand' : ''}`}>

@@ -7,7 +7,7 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useQuran, TOTAL_AYAHS, fromAbs } from '../lib/quran'
 import { useSettings } from '../lib/settings'
-import { computeTimes, fmtCountdown, fmtTime, hijri, nextPrayer, PRAYERS } from '../lib/prayer'
+import { schedule, fmtCountdown, fmtTime, hijri, nextPrayer, PRAYERS } from '../lib/prayer'
 import { db, today } from '../lib/db'
 import { hijriParts, upcomingEvents } from '../lib/hijri'
 import { nameForDisplay } from '../lib/names'
@@ -50,7 +50,7 @@ export default function Home() {
   const { data } = useQuran()
   const day = today()
   const next = nextPrayer(s, now)
-  const times = computeTimes(s, now)
+  const times = schedule(s, now)
   const plan = useLiveQuery(() => db.khatm.get('current'))
   const reads = useLiveQuery(() => db.reads.toArray()) ?? []
   const azkar = useLiveQuery(() => db.azkar.where('day').equals(day).toArray(), [day]) ?? []

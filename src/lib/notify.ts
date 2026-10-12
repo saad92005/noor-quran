@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { computeTimes, PRAYERS, PRAYER_LABEL } from './prayer'
+import { schedule, PRAYERS, PRAYER_LABEL } from './prayer'
 import { getSettings, useSettings } from './settings'
 
 // Adhan recording by Andrewler, CC BY-SA 4.0, via Wikimedia Commons (streamed, not bundled).
@@ -29,7 +29,7 @@ export function usePrayerNotifications() {
     if (!notify || !location || notificationSupport() !== 'granted') return
     const fired = new Set<string>()
     const tick = async () => {
-      const r = computeTimes(getSettings())
+      const r = schedule(getSettings())
       if (!r) return
       const now = Date.now()
       for (const p of PRAYERS) {
@@ -38,7 +38,7 @@ export function usePrayerNotifications() {
         const key = `${p}-${at}`
         if (now >= at && now - at < 90_000 && !fired.has(key)) {
           fired.add(key)
-          const body = `It is time for ${PRAYER_LABEL[p]}.`
+          const body = r.fromMosque[p] ? `Jamaat for ${PRAYER_LABEL[p]} at ${r.mosque!.name}.` : `It is time for ${PRAYER_LABEL[p]}.`
           const reg = await navigator.serviceWorker?.getRegistration()
           if (reg) reg.showNotification('Sirat Path — Prayer time', { body, icon: '/icon-192.png', tag: key })
           else new Notification('Sirat Path — Prayer time', { body, icon: '/icon-192.png' })

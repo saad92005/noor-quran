@@ -28,7 +28,9 @@ export default function MosquePanel() {
 
   function choose(m: Omit<Mosque, 'jamaat'>) {
     const existing = s.mosques.find((x) => x.id === m.id)
-    setSettings({ mosques: existing ? s.mosques : [...s.mosques, { ...m, jamaat: {} }], mosqueId: m.id })
+    // Calculate adhan times at the mosque itself, so "+N minutes after adhan" matches its board.
+    const location = m.lat != null && m.lng != null ? { lat: m.lat, lng: m.lng, label: `Mosque: ${m.name}` } : s.location
+    setSettings({ mosques: existing ? s.mosques : [...s.mosques, { ...m, jamaat: {} }], mosqueId: m.id, location, mosqueTimes: true })
     setFound(null)
   }
 
@@ -39,13 +41,13 @@ export default function MosquePanel() {
     <section className="card space-y-4 p-5">
       <div>
         <p className="font-semibold">My mosque</p>
-        <p className="text-sm text-muted">Choose the mosque you pray at and enter its jamaat times from its notice board. They appear next to the prayer times above.</p>
+        <p className="text-sm text-muted">Choose the mosque you pray at. Its jamaat times then replace the calculated times everywhere in the app, and adhan times are calculated at the mosque. Enter its times once from its notice board.</p>
       </div>
 
       {s.mosques.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {s.mosques.map((m) => (
-            <button key={m.id} onClick={() => setSettings({ mosqueId: m.id })} className={m.id === s.mosqueId ? 'btn py-1.5 text-sm' : 'btn-ghost py-1.5 text-sm'}>{m.name}</button>
+            <button key={m.id} onClick={() => setSettings({ mosqueId: m.id, ...(m.lat != null && m.lng != null ? { location: { lat: m.lat, lng: m.lng, label: `Mosque: ${m.name}` } } : {}) })} className={m.id === s.mosqueId ? 'btn py-1.5 text-sm' : 'btn-ghost py-1.5 text-sm'}>{m.name}</button>
           ))}
           <button onClick={() => setSettings({ mosqueId: null })} className={!s.mosqueId ? 'btn py-1.5 text-sm' : 'btn-ghost py-1.5 text-sm'}>None</button>
         </div>
@@ -69,7 +71,11 @@ export default function MosquePanel() {
               )
             })}
           </div>
-          {active.lat != null && active.lng != null && (
+          <label className="flex items-center justify-between gap-3 text-sm">
+            Use this mosque's times across the app (Home, Salah, reminders, calendar)
+            <input type="checkbox" className="size-5 shrink-0 accent-[var(--brand)]" checked={s.mosqueTimes} onChange={(e) => setSettings({ mosqueTimes: e.target.checked })} />
+          </label>
+          {active.lat != null && active.lng != null && s.location?.label !== `Mosque: ${active.name}` && (
             <button className="btn-ghost w-full text-sm" onClick={() => setSettings({ location: { lat: active.lat!, lng: active.lng!, label: `Mosque: ${active.name}` } })}>
               <MapPin size={15} />Calculate adhan times at this mosque
             </button>

@@ -1,5 +1,6 @@
 import { CalculationMethod, Coordinates, HighLatitudeRule, Madhab, PrayerTimes, Qibla, SunnahTimes } from 'adhan'
 import type { Settings } from './settings'
+import { jamaatAt } from './mosques'
 
 export const METHODS: Record<string, string> = {
   MuslimWorldLeague: 'Muslim World League',
@@ -83,15 +84,36 @@ export function computeTimes(s: Settings, date = new Date()) {
   return { times, sunnah: new SunnahTimes(times) }
 }
 
+/** The selected mosque, when its times should drive the app. */
+export const activeMosque = (s: Settings) => (s.mosqueTimes ? s.mosques.find((m) => m.id === s.mosqueId) : undefined)
+
+/**
+ * The times the app shows and reminds for: the user's mosque jamaat times where entered, otherwise the calculated
+ * adhan time. `adhan` always holds the calculated times (Ramadan suhoor/iftar must use these, never jamaat).
+ */
+export function schedule(s: Settings, date = new Date()) {
+  const r = computeTimes(s, date)
+  if (!r) return null
+  const m = activeMosque(s)
+  const times = {} as Record<PrayerName, Date>
+  const fromMosque = {} as Record<PrayerName, boolean>
+  for (const p of PRAYERS) {
+    const j = p === 'sunrise' ? null : jamaatAt(m, p, r.times[p])
+    times[p] = j ?? r.times[p]
+    fromMosque[p] = Boolean(j)
+  }
+  return { times, adhan: r.times, fromMosque, mosque: m, sunnah: r.sunnah }
+}
+
 export function nextPrayer(s: Settings, now = new Date()) {
-  const today = computeTimes(s, now)
+  const today = schedule(s, now)
   if (!today) return null
   for (const p of PRAYERS) {
     if (p === 'sunrise') continue
     if (today.times[p] > now) return { name: p, at: today.times[p] }
   }
   const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1)
-  return { name: 'fajr' as PrayerName, at: computeTimes(s, tomorrow)!.times.fajr }
+  return { name: 'fajr' as PrayerName, at: schedule(s, tomorrow)!.times.fajr }
 }
 
 export const qiblaBearing = (lat: number, lng: number) => Qibla(new Coordinates(lat, lng))
