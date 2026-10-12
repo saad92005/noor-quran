@@ -23,6 +23,8 @@ const STRINGS = {
   journal: { en: 'Journal', ur: 'ڈائری', ar: 'اليوميات' },
   habits: { en: 'Habits', ur: 'عادات', ar: 'العادات' },
   names: { en: '99 Names', ur: 'اسمائے حسنیٰ', ar: 'الأسماء الحسنى' },
+  qada: { en: 'Qada Tracker', ur: 'قضا نمازیں', ar: 'قضاء الصلوات' },
+  hifz: { en: 'Hifz Tracker', ur: 'حفظِ قرآن', ar: 'الحفظ' },
   khatm: { en: 'Khatm Planner', ur: 'ختم منصوبہ', ar: 'خطة الختم' },
   insights: { en: 'Insights', ur: 'جائزہ', ar: 'الإحصاءات' },
   saved: { en: 'Saved', ur: 'محفوظ', ar: 'المحفوظات' },

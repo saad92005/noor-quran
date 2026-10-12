@@ -23,6 +23,8 @@ const PAGES: Record<string, [string, string]> = {
   '/learn': ['Learn Islam — Free Lessons', 'Short free lessons on the basics of Islam, salah, wudu and more.'],
   '/kids': ['Islamic Learning for Kids', 'Fun Islamic learning for children: short surahs, duas and stories.'],
   '/khatm': ['Quran Khatm Planner', 'Plan and track finishing the whole Quran.'],
+  '/hifz': ['Hifz Tracker', 'Track the surahs you are memorising and revise them regularly.'],
+  '/qada': ['Qada Prayer Tracker', 'Keep count of missed prayers and make them up.'],
   '/habits': ['Islamic Habit Tracker', 'Track daily good deeds and Islamic habits.'],
   '/library': ['Islamic Library', 'Islamic reading library.'],
   '/about': ['About Sirat Path', DEFAULT_DESC],

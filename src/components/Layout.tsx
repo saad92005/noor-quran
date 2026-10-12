@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import {
-  BarChart3, BookHeart, BookMarked, BookOpen, CalendarDays, Clock, Compass, Download, GraduationCap, HandCoins, HandHeart,
+  BarChart3, BookHeart, Brain, History, BookMarked, BookOpen, CalendarDays, Clock, Compass, Download, GraduationCap, HandCoins, HandHeart,
   Home, Info, LayoutGrid, Library, ListChecks, MessageCircleQuestion, Moon, NotebookPen, Plane, ScrollText, Search,
   Settings, Smile, Sparkles, Star, Sun, Target, WifiOff, UserRound,
 } from 'lucide-react'
@@ -39,6 +39,7 @@ export const SIDEBAR: { group: StrKey; items: NavItem[] }[] = [
     { to: '/azkar', k: 'azkar', icon: BookHeart },
     { to: '/dhikr', k: 'dhikr', icon: Sparkles },
     { to: '/qibla', k: 'qibla', icon: Compass },
+    { to: '/qada', k: 'qada', icon: History },
     { to: '/ramadan', k: 'ramadan', icon: Moon },
     { to: '/hajj', k: 'hajj', icon: Plane },
     { to: '/zakat', k: 'zakat', icon: HandCoins },
@@ -49,6 +50,7 @@ export const SIDEBAR: { group: StrKey; items: NavItem[] }[] = [
     { to: '/habits', k: 'habits', icon: ListChecks },
     { to: '/journal', k: 'journal', icon: NotebookPen },
     { to: '/khatm', k: 'khatm', icon: Target },
+    { to: '/hifz', k: 'hifz', icon: Brain },
     { to: '/insights', k: 'insights', icon: BarChart3 },
     { to: '/calendar', k: 'calendar', icon: CalendarDays },
     { to: '/kids', k: 'kids', icon: Smile },

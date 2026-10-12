@@ -88,7 +88,11 @@ export default function SettingsPage() {
         <select className="input" value={s.reciter} onChange={(e) => setSettings({ reciter: e.target.value })}>
           {Object.entries(RECITERS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
-        <p className="text-xs text-muted">Streamed from EveryAyah.com. Played or downloaded ayahs are cached for offline use.</p>
+        <label className="flex items-center justify-between gap-3 text-sm">
+          Continue into the next surah
+          <input type="checkbox" className="size-5 accent-[var(--brand)]" checked={s.continueSurahs} onChange={(e) => setSettings({ continueSurahs: e.target.checked })} />
+        </label>
+        <p className="text-xs text-muted">Recitation keeps playing when the screen locks; use the lock-screen controls to pause or skip. Streamed from EveryAyah.com. Played or downloaded ayahs are cached for offline use.</p>
       </section>
 
       <section className="card space-y-3 p-5">

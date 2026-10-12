@@ -159,6 +159,18 @@ export default function Home() {
         </Link>
       )}
 
+      {/* Jumuʿah reminder */}
+      {now.getDay() === 5 && (
+        <Link to="/quran/18" className="card flex items-center gap-4 p-5 transition hover:border-brand">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gold/15 text-2xl">🕌</span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">Jumuʿah Mubarak: read Surah al-Kahf</p>
+            <p className="text-xs text-muted">“Whoever reads Surat al-Kahf on Friday, a light will shine for him between the two Fridays.” (al-Hakim, al-Bayhaqi; graded sahih by al-Albani, Sahih al-Jamiʿ 6470). Also send plenty of salawat on the Prophet ﷺ today.</p>
+          </div>
+          <ChevronRight className="shrink-0 text-muted rtl:rotate-180" />
+        </Link>
+      )}
+
       {/* All features */}
       <section>
         <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">{t('allFeatures')}</h2><Link to="/more" className="text-sm text-brand">{t('seeAll')}</Link></div>

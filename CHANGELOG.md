@@ -2,6 +2,13 @@
 
 Notable changes to Sirat Path. Dates are deployment dates; each push to `main` deploys to production.
 
+## 2026-10-12
+### Added
+- **Background recitation:** Quran audio keeps playing with the screen locked. Lock-screen and headphone controls (play, pause, next, previous) work, the next two ayahs are preloaded, and playback continues into the next surah (switchable in Settings → Recitation). The sleep timer also stops playback while the screen is locked.
+- **Hifz Tracker** (`/hifz`): mark surahs as learning or memorised, with a "revise next" list ordered by the longest time since revision.
+- **Qada Tracker** (`/qada`): a count of missed prayers per salah, plus "add whole days". Witr is included for the Hanafi madhab.
+- **Jumuʿah reminder** on Home on Fridays: read Surah al-Kahf (al-Hakim, al-Bayhaqi; sahih per al-Albani).
+
 ## 2026-10-10
 ### Added
 - **Urdu hadith translations** with an English / اردو / Both switch for Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasaʾi, Ibn Majah and Muwatta. Included in offline downloads.

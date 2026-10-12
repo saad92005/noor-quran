@@ -32,6 +32,8 @@ const Kids = lazy(() => import('./pages/Kids'))
 const Library = lazy(() => import('./pages/Library'))
 const Account = lazy(() => import('./pages/Account'))
 const Admin = lazy(() => import('./pages/Admin'))
+const Qada = lazy(() => import('./pages/Qada'))
+const Hifz = lazy(() => import('./pages/Hifz'))
 import { useSettings } from './lib/settings'
 import { isRtl } from './lib/i18n'
 import { usePrayerNotifications } from './lib/notify'
@@ -77,6 +79,8 @@ export default function App() {
           <Route path="/duas" element={<Duas />} />
           <Route path="/dhikr" element={<DhikrPage />} />
           <Route path="/khatm" element={<Khatm />} />
+          <Route path="/qada" element={<Qada />} />
+          <Route path="/hifz" element={<Hifz />} />
           <Route path="/saved" element={<Saved />} />
           <Route path="/ask" element={<Ask />} />
           <Route path="/names" element={<Names />} />
