@@ -53,6 +53,7 @@ To keep the app small, some content is downloaded only when you open it. Like an
 The app asks for these permissions, and only when you use the feature:
 
 - **Location:** for prayer times and Qibla. You can choose a city instead.
+- **Mosque search (optional):** when you tap "Find mosques near me" on the Salah page, your current point is sent to OpenStreetMap services (Overpass / Nominatim) to list nearby mosques. Nothing is sent unless you tap it.
 - **Notifications:** for prayer reminders.
 - **Motion and orientation sensors:** for the Qibla compass.
 

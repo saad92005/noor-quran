@@ -3,7 +3,11 @@
 Notable changes to Sirat Path. Dates are deployment dates; each push to `main` deploys to production.
 
 ## 2026-10-12
+### Fixed
+- **Prayer times now match local timetables by default.** A new **Auto** setting picks the calculation method and Asr rule used in the user's region (e.g. Karachi + Hanafi in Pakistan and India, Umm al-Qura in Saudi Arabia, ISNA in North America). Users still on the old Muslim World League / Shafi defaults are moved to Auto; manual choices are kept. Checked against AlAdhan for Lahore: every time within 1 minute.
+- High-latitude rule applied automatically, so Fajr and Isha stay sensible in northern summers (e.g. the UK).
 ### Added
+- **My mosque:** find nearby mosques (OpenStreetMap; the location is sent only on tap), pick one or add yours by name, and enter its jamaat times as fixed times or "+N minutes after adhan", including Jumuʿah. Jamaat times show beside each prayer, and adhan times can be calculated at the mosque's exact location.
 - **Background recitation:** Quran audio keeps playing with the screen locked. Lock-screen and headphone controls (play, pause, next, previous) work, the next two ayahs are preloaded, and playback continues into the next surah (switchable in Settings → Recitation). The sleep timer also stops playback while the screen is locked.
 - **Hifz Tracker** (`/hifz`): mark surahs as learning or memorised, with a "revise next" list ordered by the longest time since revision.
 - **Qada Tracker** (`/qada`): a count of missed prayers per salah, plus "add whole days". Witr is included for the Hanafi madhab.

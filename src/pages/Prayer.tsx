@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { CalendarPlus, Square, Volume2, Bell, BellOff, ChevronLeft, ChevronRight, MapPin, Printer } from 'lucide-react'
-import { computeTimes, fmtTime, hijri, METHODS, nextPrayer, PRAYERS, PRAYER_LABEL } from '../lib/prayer'
+import { computeTimes, fmtTime, hijri, METHODS, nextPrayer, PRAYERS, PRAYER_LABEL, regionCalc } from '../lib/prayer'
+import { jamaatAt } from '../lib/mosques'
+import MosquePanel from '../components/MosquePanel'
 import { setSettings, useSettings } from '../lib/settings'
 import { ADHAN_CREDIT, notificationSupport, playAdhan, stopAdhan } from '../lib/notify'
 import { downloadIcs } from '../lib/ics'
@@ -20,6 +22,8 @@ export default function Prayer() {
   const date = new Date(now); date.setDate(now.getDate() + offset)
   const r = computeTimes(s, date)
   const next = offset === 0 ? nextPrayer(s, now) : null
+  const mosque = s.mosques.find((m) => m.id === s.mosqueId)
+  const rec = regionCalc(s.location?.label)
 
   async function toggleNotify() {
     if (s.notify) { setSettings({ notify: false }); return }
@@ -61,11 +65,15 @@ export default function Prayer() {
                 return (
                   <li key={p} className={`flex items-center justify-between px-5 py-4 transition ${isNext ? 'bg-brand text-brand-ink' : ''} ${past && !isNext ? 'opacity-50' : ''}`}>
                     <span className={`font-medium ${p === 'sunrise' && !isNext ? 'text-muted' : ''}`}>{p === 'dhuhr' && date.getDay() === 5 ? t('jumuah') : t(p as StrKey)}</span>
-                    <span className="text-lg font-semibold tabular-nums">{fmtTime(r.times[p])}</span>
+                    <span className="text-end">
+                      <span className="block text-lg font-semibold tabular-nums">{fmtTime(r.times[p])}</span>
+                      {(() => { const j = p !== 'sunrise' && jamaatAt(mosque, p, r.times[p]); return j ? <span className={`block text-xs tabular-nums ${isNext ? 'text-brand-ink/80' : 'text-muted'}`}>Jamaat {fmtTime(j)}</span> : null })()}
+                    </span>
                   </li>
                 )
               })}
             </ul>
+            {mosque && <p className="border-t border-line px-5 py-2 text-xs text-muted">Jamaat times: {mosque.name} (as entered by you)</p>}
             {r && (
               <p className="border-t border-line px-5 py-3 text-xs text-muted">
                 Middle of the night {fmtTime(r.sunnah.middleOfTheNight)} · Last third {fmtTime(r.sunnah.lastThirdOfTheNight)}
@@ -73,6 +81,7 @@ export default function Prayer() {
             )}
           </section>
           <MonthTable />
+          <MosquePanel />
         </>
       )}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -82,12 +91,16 @@ export default function Prayer() {
         <label className="block text-sm">
           <span className="text-muted">Method</span>
           <select className="input mt-1" value={s.method} onChange={(e) => setSettings({ method: e.target.value })}>
+            <option value="auto">Auto: {METHODS[rec.method]} (used in your region)</option>
             {Object.entries(METHODS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </label>
         <div className="text-sm">
           <span className="text-muted">Asr</span>
           <div className="mt-1 grid grid-cols-2 gap-2">
+            <button onClick={() => setSettings({ madhab: 'auto' })} className={`${s.madhab === 'auto' ? 'btn' : 'btn-ghost'} col-span-2 h-auto min-h-10 whitespace-normal text-center text-sm leading-tight`}>
+              Auto ({rec.madhab === 'Hanafi' ? 'Hanafi' : 'Standard'}, as in your region)
+            </button>
             {(['Shafi', 'Hanafi'] as const).map((m) => (
               <button key={m} onClick={() => setSettings({ madhab: m })} className={`${m === s.madhab ? 'btn' : 'btn-ghost'} h-auto min-h-10 whitespace-normal text-center text-sm leading-tight`}>
                 {m === 'Shafi' ? 'Standard (Shafi, Maliki, Hanbali)' : 'Hanafi'}
@@ -95,6 +108,7 @@ export default function Prayer() {
             ))}
           </div>
         </div>
+        <p className="text-xs text-muted">Times still a few minutes off from your local mosque? Use the adjustments below, or add your mosque's jamaat times.</p>
         <details className="text-sm">
           <summary className="cursor-pointer text-muted">Manual adjustments (minutes)</summary>
           <div className="mt-3 grid grid-cols-3 gap-2">

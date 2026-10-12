@@ -1,4 +1,4 @@
-import { CalculationMethod, Coordinates, Madhab, PrayerTimes, Qibla, SunnahTimes } from 'adhan'
+import { CalculationMethod, Coordinates, HighLatitudeRule, Madhab, PrayerTimes, Qibla, SunnahTimes } from 'adhan'
 import type { Settings } from './settings'
 
 export const METHODS: Record<string, string> = {
@@ -22,14 +22,62 @@ export const PRAYER_LABEL: Record<PrayerName, string> = {
   fajr: 'Fajr', sunrise: 'Sunrise', dhuhr: 'Dhuhr', asr: 'Asr', maghrib: 'Maghrib', isha: 'Isha',
 }
 
+// Method and Asr juristic setting most mosques use in each region, so "Auto" matches local timetables.
+type Calc = { method: string; madhab: 'Shafi' | 'Hanafi' }
+const BY_COUNTRY: [RegExp, Calc][] = [
+  [/pakistan|india|bangladesh|afghanistan/i, { method: 'Karachi', madhab: 'Hanafi' }],
+  [/saudi|yemen|oman|bahrain/i, { method: 'UmmAlQura', madhab: 'Shafi' }],
+  [/egypt|sudan|libya|syria|lebanon|iraq|jordan|palestine/i, { method: 'Egyptian', madhab: 'Shafi' }],
+  [/emirates|uae/i, { method: 'Dubai', madhab: 'Shafi' }],
+  [/qatar/i, { method: 'Qatar', madhab: 'Shafi' }],
+  [/kuwait/i, { method: 'Kuwait', madhab: 'Shafi' }],
+  [/turkey|türkiye/i, { method: 'Turkey', madhab: 'Hanafi' }],
+  [/malaysia|singapore|indonesia|brunei/i, { method: 'Singapore', madhab: 'Shafi' }],
+  [/iran/i, { method: 'Tehran', madhab: 'Shafi' }],
+  [/usa|united states|canada/i, { method: 'NorthAmerica', madhab: 'Shafi' }],
+  [/united kingdom|uk|england|scotland|wales|ireland/i, { method: 'MoonsightingCommittee', madhab: 'Hanafi' }],
+]
+const BY_TZ: [RegExp, Calc][] = [
+  [/Asia\/(Karachi|Kolkata|Calcutta|Dhaka|Kabul)/, BY_COUNTRY[0][1]],
+  [/Asia\/(Riyadh|Aden|Muscat|Bahrain)/, BY_COUNTRY[1][1]],
+  [/Africa\/(Cairo|Khartoum|Tripoli)|Asia\/(Damascus|Beirut|Baghdad|Amman|Gaza|Hebron)/, BY_COUNTRY[2][1]],
+  [/Asia\/Dubai/, BY_COUNTRY[3][1]], [/Asia\/Qatar/, BY_COUNTRY[4][1]], [/Asia\/Kuwait/, BY_COUNTRY[5][1]],
+  [/Europe\/Istanbul/, BY_COUNTRY[6][1]],
+  [/Asia\/(Kuala_Lumpur|Singapore|Jakarta|Makassar|Brunei)/, BY_COUNTRY[7][1]],
+  [/Asia\/Tehran/, BY_COUNTRY[8][1]],
+  [/^America\//, BY_COUNTRY[9][1]],
+  [/Europe\/(London|Dublin)/, BY_COUNTRY[10][1]],
+]
+const FALLBACK: Calc = { method: 'MuslimWorldLeague', madhab: 'Shafi' }
+
+/** Recommended calculation for a place: from the city label's country, else the device time zone. */
+export function regionCalc(label?: string): Calc {
+  const country = label?.split(',').pop()?.trim()
+  if (country && !/^(my location|custom|mosque)/i.test(label!)) {
+    const hit = BY_COUNTRY.find(([re]) => re.test(country))
+    if (hit) return hit[1]
+  }
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? ''
+  return BY_TZ.find(([re]) => re.test(tz))?.[1] ?? FALLBACK
+}
+
+/** The method and Asr setting actually in use, resolving "auto". */
+export function resolveCalc(s: Pick<Settings, 'method' | 'madhab' | 'location'>): Calc {
+  const rec = regionCalc(s.location?.label)
+  return { method: s.method === 'auto' ? rec.method : s.method, madhab: s.madhab === 'auto' ? rec.madhab : s.madhab }
+}
+
 /** Computed fully on-device with the open-source `adhan` library — no API call. */
 export function computeTimes(s: Settings, date = new Date()) {
   if (!s.location) return null
   const coords = new Coordinates(s.location.lat, s.location.lng)
-  const factory = (CalculationMethod as unknown as Record<string, () => ReturnType<typeof CalculationMethod.MuslimWorldLeague>>)[s.method]
+  const calc = resolveCalc(s)
+  const factory = (CalculationMethod as unknown as Record<string, () => ReturnType<typeof CalculationMethod.MuslimWorldLeague>>)[calc.method]
     ?? CalculationMethod.MuslimWorldLeague
   const params = factory()
-  params.madhab = s.madhab === 'Hanafi' ? Madhab.Hanafi : Madhab.Shafi
+  params.madhab = calc.madhab === 'Hanafi' ? Madhab.Hanafi : Madhab.Shafi
+  // Far north/south, Fajr and Isha twilight may never happen in summer; use the recommended fallback rule.
+  params.highLatitudeRule = HighLatitudeRule.recommended(coords)
   Object.assign(params.adjustments, s.adjustments)
   const times = new PrayerTimes(coords, date, params)
   return { times, sunnah: new SunnahTimes(times) }

@@ -1,12 +1,19 @@
 import { useSyncExternalStore } from 'react'
 
+export type Mosque = {
+  id: string; name: string; lat?: number; lng?: number
+  /** Per prayer: fixed "HH:MM", or "+N" minutes after the adhan time. */
+  jamaat: Record<string, string>
+}
+
 export type Settings = {
   theme: 'light' | 'dark' | 'system'
   arabicSize: number
   showTranslation: boolean
   reciter: string
   method: string
-  madhab: 'Shafi' | 'Hanafi'
+  /** Asr juristic setting; 'auto' follows the region. */
+  madhab: 'Shafi' | 'Hanafi' | 'auto'
   location: { lat: number; lng: number; label: string } | null
   hijriOffset: number
   adjustments: Record<string, number>
@@ -33,17 +40,21 @@ export type Settings = {
   continueSurahs: boolean
   /** Missed (qada) prayers still owed, per prayer. */
   qada: Record<string, number>
+  /** Mosques the user follows; jamaat times are entered by the user (no public source exists). */
+  mosques: Mosque[]
+  mosqueId: string | null
+  prayerV2: boolean
   /** Hifz progress per surah number: learning or memorised, plus the last revision day. */
   hifz: Record<string, { st: 'learning' | 'done'; rev?: string }>
 }
 
 const DEFAULTS: Settings = {
   theme: 'system', arabicSize: 30, showTranslation: true, reciter: 'Alafasy_128kbps',
-  method: 'MuslimWorldLeague', madhab: 'Shafi', location: null, hijriOffset: 0,
+  method: 'auto', madhab: 'auto', location: null, hijriOffset: 0,
   adjustments: {}, lastRead: null, notify: false,
   readMode: 'verse', playbackRate: 1, repeat: 1, sidebarSurahs: true,
   accent: 'emerald', lang: 'en', name: '', dailyAyahGoal: 20, sound: false, onboarded: false, secondTranslation: 0, urduId: 234, hadithLang: 'en', tajweed: false, adhan: false,
-  continueSurahs: true, qada: {}, hifz: {},
+  continueSurahs: true, qada: {}, hifz: {}, mosques: [], mosqueId: null, prayerV2: true,
 }
 
 const KEY = 'sirat-settings'
@@ -51,7 +62,17 @@ let current: Settings = read()
 const listeners = new Set<() => void>()
 
 function read(): Settings {
-  try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') } } catch { return DEFAULTS }
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}')
+    // Older versions defaulted to MWL + Shafi, which is wrong for much of South Asia. Move untouched defaults to Auto.
+    if (Object.keys(saved).length && !saved.prayerV2) {
+      if (saved.method === 'MuslimWorldLeague' || saved.method === undefined) saved.method = 'auto'
+      if (saved.madhab === 'Shafi' || saved.madhab === undefined) saved.madhab = 'auto'
+      saved.prayerV2 = true
+      try { localStorage.setItem(KEY, JSON.stringify(saved)) } catch { /* storage unavailable */ }
+    }
+    return { ...DEFAULTS, ...saved }
+  } catch { return DEFAULTS }
 }
 
 export function setSettings(patch: Partial<Settings>) {

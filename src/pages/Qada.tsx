@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { setSettings, useSettings } from '../lib/settings'
+import { resolveCalc } from '../lib/prayer'
 
 const BASE = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
 
 export default function Qada() {
-  const { qada, madhab } = useSettings()
-  const prayers = madhab === 'Hanafi' ? [...BASE, 'Witr'] : BASE
+  const s = useSettings()
+  const { qada } = s
+  const prayers = resolveCalc(s).madhab === 'Hanafi' ? [...BASE, 'Witr'] : BASE
   const [days, setDays] = useState(0)
   const total = prayers.reduce((n, p) => n + (qada[p] ?? 0), 0)
   const change = (p: string, d: number) => setSettings({ qada: { ...qada, [p]: Math.max(0, (qada[p] ?? 0) + d) } })
@@ -48,7 +50,7 @@ export default function Qada() {
       </section>
 
       <p className="text-xs text-muted">
-        Witr is listed when your madhab is set to Hanafi in Salah settings. Scholars differ on how to estimate and order missed
+        Witr is listed when your madhab is Hanafi (or Auto in a Hanafi region) in Salah settings. Scholars differ on how to estimate and order missed
         prayers, so ask a local scholar about your own situation.
       </p>
     </div>
